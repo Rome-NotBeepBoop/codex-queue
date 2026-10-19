@@ -3,8 +3,9 @@ import tempfile
 import time
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 from textual.containers import VerticalScroll
-from textual.widgets import Button, Input, OptionList, Static, TextArea
+from textual.widgets import Button, DataTable, Input, OptionList, Static, TextArea
 from codex_queue.tui import QueueApp, Form, QueueView, Settings, UsageView, SecondaryMenu, Execution
 from codex_queue.ui_components import UsageBar, BrandHeader, COLORS
 from codex_queue.usage import Usage, Window
@@ -117,6 +118,15 @@ class ReferenceTests(unittest.IsolatedAsyncioTestCase):
             await pilot.press('escape','?');await pilot.pause();self.assertIsInstance(app.screen,ShortcutHelp)
             await pilot.press('escape');self.assertEqual(len(app.screen_stack),1)
             self.assertEqual(self.provider.calls,0)
+
+    async def test_queue_refresh_after_table_removed_during_teardown(self):
+        app=self.app()
+        async with app.run_test(size=(120,35)) as pilot:
+            view=QueueView()
+            app.push_screen(view);await pilot.pause()
+            await view.query_one(DataTable).remove()
+            with patch.object(app.store,'rows',side_effect=AssertionError('Detached table must not refresh')):
+                view.refresh_rows()
 
     async def test_secondary_destinations_reachable_by_keyboard(self):
         app=self.app()

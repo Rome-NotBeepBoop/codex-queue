@@ -330,11 +330,13 @@ class NavigationTests(Fixture,unittest.IsolatedAsyncioTestCase):
         app=QueueApp(self.state,config=self.root/'missing.json',provider=self.provider)
         async with app.run_test(size=(110,48)) as pilot:
             view=await self.wizard(app,pilot);view.query_one('#manual-repo',Input).value=str(self.repo)
-            await pilot.click('#add-repo');await pilot.pause();await pilot.click('#use-session');await pilot.pause()
+            await pilot.click('#add-repo');await pilot.pause()
+            button=view.query_one('#use-session',Button)
+            button.active_effect_duration=0
+            button.focus();await pilot.press('enter');await pilot.pause()
             self.assertEqual(view.step,1);self.assertIn('selected conversation',str(view.query_one('#wizard-error').render()))
             view.query_one('#manual-session',Input).value=' '+SESSION+' '
-            await pilot.pause(.4)
-            await pilot.click('#use-session');await pilot.pause()
+            button.focus();await pilot.press('enter');await pilot.wait_for_scheduled_animations()
             self.assertEqual(view.session_id,SESSION);self.assertEqual(view.step,2)
     async def test_settings_mode_navigation_and_configure_do_not_enable(self):
         app=QueueApp(self.state,config=self.root/'missing.json',provider=self.provider)

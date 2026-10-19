@@ -189,7 +189,8 @@ class Details(ModalScreen):
 
 class QueueView(Screen):
     BINDINGS = [('escape', 'back', 'Back')]
-    def __init__(self, history=False): super().__init__(); self.history = history
+    def __init__(self, history=False):
+        super().__init__(); self.history = history; self._refresh_timer = None
     def compose(self):
         yield Header()
         yield Label('Execution history' if self.history else 'Queue', classes='title')
@@ -202,9 +203,17 @@ class QueueView(Screen):
     def on_mount(self):
         self.query_one(DataTable).add_columns('Job', 'Project', 'Chat / Session', 'Type', 'Status', 'Mode', 'Reset / eligibility')
         self.refresh_rows()
-        self.set_interval(2, self.refresh_rows)
+        self._refresh_timer = self.set_interval(2, self.refresh_rows)
+    def on_unmount(self):
+        if self._refresh_timer is not None:
+            self._refresh_timer.stop()
+            self._refresh_timer = None
     def refresh_rows(self):
-        table = self.query_one(DataTable); selected = table.cursor_row; table.clear()
+        # A pending timer callback may run while the screen's children are removed.
+        table = next(iter(self.query(DataTable)), None)
+        if table is None:
+            return
+        selected = table.cursor_row; table.clear()
         from .projects import resolve_project_name, resolve_chat_title
         for row in self.app.store.rows():
             if self.history and not row['attempts']: continue
