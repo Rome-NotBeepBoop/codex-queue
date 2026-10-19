@@ -1,0 +1,6 @@
+{
+  "execution_enabled": false,
+  "codex": "/usr/local/bin/codex",
+  "bucket": "codex",
+  "job_timeout_seconds": 3600
+}

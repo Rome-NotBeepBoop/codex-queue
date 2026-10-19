@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+[project]
+name = "codex-queue"
+version = "0.2.0"
+description = "A lightweight, interactive, usage-aware task queue and session scheduler for OpenAI Codex CLI"
+requires-python = ">=3.11"
+dependencies = ["textual>=8.2,<9", "platformdirs>=4,<5"]
+license = "MIT"
+readme = "README.md"
+classifiers = ["Operating System :: OS Independent", "Programming Language :: Python :: 3"]
+[project.scripts]
+codex-queue = "codex_queue.cli:main"
+[tool.setuptools.packages.find]
+include = ["codex_queue*"]

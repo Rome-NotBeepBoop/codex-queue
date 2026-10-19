@@ -1,0 +1,30 @@
+[Unit]
+Description=Usage-aware Codex prompt queue (requires explicit activation)
+Wants=network-online.target
+After=network-online.target
+StartLimitIntervalSec=600
+StartLimitBurst=3
+
+[Service]
+Type=simple
+User=codex-queue
+Group=codex-queue
+EnvironmentFile=/etc/codex-queue/queue.env
+WorkingDirectory=/var/lib/codex-queue
+ExecStart=/opt/codex-queue/venv/bin/codex-queue worker --execute
+Restart=on-failure
+RestartSec=120
+TimeoutStopSec=30
+KillMode=control-group
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/codex-queue
+RestrictSUIDSGID=true
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
